@@ -2,24 +2,25 @@ import React, { useState } from "react";
 import axios from "axios";
 import { ReposType, UsersType } from "../types";
 import { useMutation } from "react-query";
-import UserList from "./UserList";
-import RepoList from "./RepoList";
+import Dropdown from "./Dropdown";
+import Loader from "./Loader";
 
 function UserSearch() {
   const [searchUserQuery, setSearchUserQuery] = useState("");
   const [users, setUsers] = useState<UsersType[]>([]);
-  const [openDropdown, setOpenDropDown] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<null | UsersType>(null);
   const [repositories, setRepositories] = useState<ReposType[]>([]);
 
-  const { mutate: userMutation, isLoading: loadingUserMutation } =
-    useMutation(getUsers);
+  const {
+    mutate: userMutation,
+    isLoading: loadingUserMutation,
+    isError,
+  } = useMutation(getUsers);
   const { mutate: reposMutation, isLoading: loadingRepoMutation } =
     useMutation(getRepos);
-    
 
   async function getUsers() {
-    console.log("fetching users");
+    if (!searchUserQuery) return;
+
     const response = await axios.get(
       `https://api.github.com/search/users?q=${searchUserQuery.toLowerCase()}&per_page=5`
     );
@@ -32,16 +33,9 @@ function UserSearch() {
     setRepositories(response.data);
   }
 
-  async function handleSubmit(event: React.SyntheticEvent) {
+  function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
-    setSelectedUser(null);
     userMutation();
-  }
-
-  async function handleShowRepo(user: UsersType) {
-    setSelectedUser(user);
-    setOpenDropDown((prev) => !prev);
-    reposMutation(user);
   }
 
   return (
@@ -61,28 +55,15 @@ function UserSearch() {
         </form>
 
         {searchUserQuery && <p>{`Showing user for : "${searchUserQuery}"`}</p>}
-        <ul className="flex flex-col gap-2 bg-white">
-          {!loadingUserMutation ? (
-            users.map((user) => (
-              <li key={user.id} className="flex flex-col w-full">
-                <UserList
-                  user={user}
-                  handleShowRepo={handleShowRepo}
-                  status={openDropdown && selectedUser?.id === user.id}
-                />
+        {isError && <Loader color="red">Error Fetching data...</Loader>}
 
-                {selectedUser?.id === user.id && openDropdown && (
-                  <RepoList
-                    repositories={repositories}
-                    isLoading={loadingRepoMutation}
-                  />
-                )}
-              </li>
-            ))
-          ) : (
-            <p>Loading...</p>
-          )}
-        </ul>
+        <Dropdown
+          users={users}
+          reposMutation={reposMutation}
+          loadingRepoMutation={loadingRepoMutation}
+          loadingUserMutation={loadingUserMutation}
+          repositories={repositories}
+        />
       </section>
     </div>
   );
