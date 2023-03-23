@@ -1,37 +1,22 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { ReposType, UsersType } from "../types";
-import { useMutation } from "react-query";
 import Dropdown from "./Dropdown";
 import Loader from "./Loader";
+import useFetch from "../hooks/useFetch";
 
 function UserSearch() {
   const [searchUserQuery, setSearchUserQuery] = useState("");
-  const [users, setUsers] = useState<UsersType[]>([]);
-  const [repositories, setRepositories] = useState<ReposType[]>([]);
 
   const {
-    mutate: userMutation,
-    isLoading: loadingUserMutation,
+    users,
+    repositories,
+    loadingRepoMutation,
+    loadingUserMutation,
+    userMutation,
+    reposMutation,
+    setAlert,
     isError,
-  } = useMutation(getUsers);
-  const { mutate: reposMutation, isLoading: loadingRepoMutation } =
-    useMutation(getRepos);
-
-  async function getUsers() {
-    if (!searchUserQuery) return;
-
-    const response = await axios.get(
-      `https://api.github.com/search/users?q=${searchUserQuery.toLowerCase()}&per_page=5`
-    );
-    setUsers(response.data.items);
-  }
-
-  async function getRepos(user: UsersType) {
-    console.log("fetching repos");
-    const response = await axios.get(user.repos_url);
-    setRepositories(response.data);
-  }
+    alert,
+  } = useFetch(searchUserQuery);
 
   function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
@@ -45,13 +30,17 @@ function UserSearch() {
           <input
             type="text"
             value={searchUserQuery}
-            onChange={(e) => setSearchUserQuery(e.target.value)}
+            onChange={(e) => {
+              setAlert("");
+              setSearchUserQuery(e.target.value);
+            }}
             placeholder="Enter Username"
             className="p-2 border border-black rounded bg-gray-200"
           />
           <button type="submit" className="bg-blue-400 p-2 text-white rounded">
             Search
           </button>
+          {alert}
         </form>
 
         {searchUserQuery && <p>{`Showing user for : "${searchUserQuery}"`}</p>}
