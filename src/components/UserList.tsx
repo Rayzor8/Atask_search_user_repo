@@ -5,7 +5,7 @@ import capitalizeText from "../utils/capitalizeText";
 type UserListProps = {
   user: UsersType;
   handleShowRepo: (user: UsersType) => void;
-  status: boolean;
+  status: boolean | null;
 };
 
 const UserList = ({ user, handleShowRepo, status }: UserListProps) => {

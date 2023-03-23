@@ -1,6 +1,7 @@
 import { BsStarFill } from "react-icons/bs";
 import { ReposType } from "../types";
 import capitalizeText from "../utils/capitalizeText";
+import Loader from "./Loader";
 
 type RepoListTypes = {
   repositories: ReposType[];
@@ -8,10 +9,8 @@ type RepoListTypes = {
 };
 
 const RepoList = ({ repositories, isLoading }: RepoListTypes) => {
-    
-  if (isLoading) {
-    return <p>loading...</p>;
-  }
+
+  if (isLoading) return <Loader color="blue">Loading...</Loader>;
 
   return (
     <ul className="flex flex-col gap-2 mt-4">
