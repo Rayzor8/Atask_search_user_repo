@@ -13,11 +13,13 @@ const useFetch = (query: string) => {
     isLoading: loadingUserMutation,
     isError,
   } = useMutation(getUsers);
-  
+
   const { mutate: reposMutation, isLoading: loadingRepoMutation } =
     useMutation(getRepos);
 
   async function getUsers() {
+    setUsers([])
+    
     if (!query) {
       setAlert("Please enter input");
       return;
